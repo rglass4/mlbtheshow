@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <script>
+      const path = window.location.pathname;
+      const search = window.location.search;
+      const hash = window.location.hash;
+      const segments = path.split('/').filter(Boolean);
+      const repo = segments.length > 0 ? `/${segments[0]}` : '';
+      const rest = repo ? path.slice(repo.length) : path;
+      const target = `${repo}/?p=${encodeURIComponent(rest + search + hash)}`;
+      window.location.replace(target);
+    </script>
+  </head>
+  <body></body>
+</html>
