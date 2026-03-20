@@ -6,7 +6,6 @@ import { StatCard } from '../components/StatCard';
 import { TrendCharts } from '../components/TrendCharts';
 import { useAsync } from '../hooks/useAsync';
 import { fetchDashboardSnapshot } from '../lib/api';
-import { sampleParsedGame } from '../lib/sampleData';
 import { formatPct, formatOneDecimal } from '../lib/utils';
 import { lastTenRecord } from '../lib/stats';
 
@@ -102,7 +101,7 @@ export const HomePage = () => {
         </Card>
       </div>
 
-      <TrendCharts games={data.games} playEvents={sampleParsedGame.playEvents} />
+      <TrendCharts games={data.games} playEvents={[]} />
     </div>
   );
 };

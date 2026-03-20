@@ -97,7 +97,7 @@ This project is designed to work on both:
 3. Add repository secrets:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
-4. Ensure the default branch or deployment branch is one of the workflow trigger branches, or update `.github/workflows/deploy-pages.yml`. The workflow uses `npm install` so it does not depend on a checked-in lockfile.
+4. Ensure the default branch or deployment branch is one of the workflow trigger branches, or update `.github/workflows/deploy-pages.yml`.
 
 ### Why refreshes won’t break
 
@@ -136,15 +136,14 @@ The parser is intentionally modular and defensive:
 - it uses `DOMParser` in-browser,
 - it extracts typed sections separately,
 - it tolerates missing fields,
-- and it is now targeted to the current MLB The Show 26 saved-game structure from `theshow.com`, including the summary block, boxscore tables, game log narrative, perfect-perfect section, and stadium metadata.
+- and it can be tightened once a real sample HTML file is available.
 
 Current parser assumptions:
-- the saved HTML includes the `/games/<id>` path in inline scripts or markup,
-- the first `.page-body > .section-block` is the summary/linescore card,
-- the `.boxscore` area contains two team blocks with batting and pitching tables,
-- and the final `Game Log` section preserves inning markers plus the `Perfect Contact Hits (Perfect-Perfect)` block.
+- the saved HTML still contains semantic table/caption or nearby heading text for batting, pitching, and linescore data,
+- a recognizable game ID remains in the HTML or source URL string,
+- and play events are represented as list items or identifiable event blocks.
 
-If the upstream HTML changes, you can update the isolated parser logic and fixture-backed tests without changing the rest of the UI.
+If you paste a real sample HTML file, the selectors and extraction logic can be made much more precise.
 
 ## Setup checklist
 
@@ -175,7 +174,7 @@ If the upstream HTML changes, you can update the isolated parser logic and fixtu
 
 - You want a static-only architecture with no custom API server.
 - Public visitors should be able to view rows where `games.is_public = true`.
-- Imported HTML structure matches the current MLB The Show 26 game-log page shape you provided, so the parser is now targeted to that DOM and narrative layout.
+- Imported HTML structure is mostly stable but not yet available in this chat, so parser selectors are generalized around common table/list patterns.
 - Co-op players should be stored per game as an array and entered during import.
 - GitHub Pages deployment will build from a repository subpath unless explicitly overridden.
 - A sample fallback dataset is acceptable for first-run UX before Supabase is configured.

@@ -1,55 +1,61 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseGameHtml } from './htmlParser';
 
-const html = readFileSync(new URL('./fixtures/mlb26-game-sample.html', import.meta.url), 'utf8');
+const html = `
+<!doctype html>
+<html>
+  <head>
+    <title>New York Yankees 6 - 3 Los Angeles Dodgers</title>
+  </head>
+  <body>
+    <div>gameId: 2603202401</div>
+    <div>User: AceCaptain</div>
+    <div>Opponent: RivalSlugger</div>
+    <div>Played: March 18, 2026 10:15 PM UTC</div>
+    <div>Platform: Crossplay</div>
+    <div>Stadium: Laughing Mountain Park</div>
+    <div>Hitting Difficulty: Hall of Fame</div>
+    <div>Pitching Difficulty: Legend</div>
+    <table>
+      <caption>Linescore</caption>
+      <tbody>
+        <tr><td>User</td><td>1</td><td>0</td><td>2</td></tr>
+        <tr><td>Opponent</td><td>0</td><td>0</td><td>1</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <caption>Batting</caption>
+      <tbody>
+        <tr><td>Derek Jeter</td><td>SS</td><td>1</td><td>4</td><td>2</td><td>3</td><td>1</td><td>1</td><td>0</td><td>.750</td><td>1</td><td>0</td><td>0</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <caption>Pitching</caption>
+      <tbody>
+        <tr><td>Gerrit Cole</td><td>6.2</td><td>5</td><td>1</td><td>1</td><td>1</td><td>9</td><td>1.35</td><td>W</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li class="play-event">Top 1 Derek Jeter doubles to left.</li>
+      <li class="play-event">Top 1 Aaron Judge singles, Derek Jeter scores.</li>
+    </ul>
+    <div class="perfect-perfect">Aaron Judge perfect-perfect line drive 112.4 mph.</div>
+  </body>
+</html>`;
 
 describe('parseGameHtml', () => {
-  it('parses real MLB The Show 26 game metadata and box score sections', () => {
-    const parsed = parseGameHtml(html, {
-      coopPlayers: ['PraiseTheSunSon', 'TeammateOne'],
-      filename: 'mlb26-game-sample.html'
-    });
+  it('parses box score metadata and rows', () => {
+    const parsed = parseGameHtml(html, { coopPlayers: ['AceCaptain', 'ClutchLefty'], filename: 'sample.html' });
 
-    expect(parsed.metadata.id).toBe(86146624);
-    expect(parsed.metadata.userUsername).toBe('PraiseTheSunSon');
-    expect(parsed.metadata.opponentUsername).toBe('Scrappy8121');
-    expect(parsed.metadata.platform).toBe('PSN');
-    expect(parsed.metadata.userTeam).toBe('Mustangs');
-    expect(parsed.metadata.opponentTeam).toBe('Nightmares');
-    expect(parsed.metadata.userScore).toBe(9);
-    expect(parsed.metadata.opponentScore).toBe(2);
-    expect(parsed.metadata.result).toBe('W');
-    expect(parsed.metadata.stadium).toContain('PNC Park');
-    expect(parsed.metadata.stadiumElevationFt).toBe(730);
-    expect(parsed.metadata.hittingDifficulty).toBe('Veteran');
-    expect(parsed.metadata.pitchingDifficulty).toBe('Veteran');
-    expect(parsed.metadata.weather).toBe('Clear');
-    expect(parsed.metadata.temperatureF).toBe(66);
-    expect(parsed.metadata.attendance).toBe(22770);
-    expect(parsed.metadata.attendanceCapacityPct).toBe(59);
-    expect(parsed.metadata.scheduledFirstPitch).toBe('7:00pm');
-    expect(parsed.metadata.winningPitcher).toBe('Eduardo Rodriguez');
-    expect(parsed.metadata.losingPitcher).toBe('Shohei Ohtani');
-  });
-
-  it('parses inning lines, batting/pitching lines, play events, and perfect-perfect events', () => {
-    const parsed = parseGameHtml(html, { coopPlayers: ['PraiseTheSunSon', 'TeammateOne'] });
-
-    expect(parsed.inningLines.filter((line) => line.teamSide === 'user')).toHaveLength(9);
-    expect(parsed.battingLines).toHaveLength(18);
-    expect(parsed.pitchingLines).toHaveLength(7);
-    expect(parsed.playEvents.length).toBeGreaterThan(50);
-    expect(parsed.perfectPerfectEvents).toHaveLength(4);
-
-    const witt = parsed.battingLines.find((line) => line.playerName === 'Witt Jr.');
-    const raleigh = parsed.perfectPerfectEvents.find((event) => event.playerName === 'Raleigh');
-    const finalUserEvent = parsed.playEvents.find((event) => event.description.includes('Raleigh homered to right'));
-
-    expect(witt?.homeRuns).toBe(1);
-    expect(witt?.rbi).toBe(4);
-    expect(raleigh?.exitVelocityMph).toBe(112);
-    expect(finalUserEvent?.battingTeamSide).toBe('user');
-    expect(parsed.notes).toEqual([]);
+    expect(parsed.metadata.id).toBe(2603202401);
+    expect(parsed.metadata.userUsername).toBe('AceCaptain');
+    expect(parsed.metadata.opponentUsername).toBe('RivalSlugger');
+    expect(parsed.metadata.coopPlayers).toEqual(['AceCaptain', 'ClutchLefty']);
+    expect(parsed.metadata.stadium).toBe('Laughing Mountain Park');
+    expect(parsed.inningLines).toHaveLength(6);
+    expect(parsed.battingLines[0]?.playerName).toBe('Derek Jeter');
+    expect(parsed.pitchingLines[0]?.playerName).toBe('Gerrit Cole');
+    expect(parsed.playEvents).toHaveLength(2);
+    expect(parsed.perfectPerfectEvents[0]?.exitVelocityMph).toBe(112.4);
   });
 });
